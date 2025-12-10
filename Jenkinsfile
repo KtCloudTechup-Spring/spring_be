@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+    // 확인
     // 환경 변수 설정: 캐싱 경로 지정 및 터미널 설정
     environment {
         TERM = 'xterm'
