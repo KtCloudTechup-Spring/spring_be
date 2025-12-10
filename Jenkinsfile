@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+    // 확인
     // 환경 변수 설정: 캐싱 경로 지정 및 터미널 설정
     environment {
         TERM = 'xterm'
@@ -98,8 +98,8 @@ pipeline {
         // 빌드 중 어떤 단계라도 실패했을 때 실행
         failure {
             echo 'Pipeline failed! Check logs for errors.'
-            // TODO: 실패 알림 로직 추가 (예: 이메일 또는 Slack 알림 전송)
+            // TODO: 실패 알림 로직 추가 (예: 이메일 또는 Slack 알림 전송))
         }
         // 이 외에도 unstable, aborted 등 다양한 상태에 따라 후처리 로직을 추가할 수 있습니다.
     }
-}
+}  
