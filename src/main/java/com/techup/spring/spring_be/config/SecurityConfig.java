@@ -1,30 +1,53 @@
 package com.techup.spring.spring_be.config;
 
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+
+// Spring Security 설정 + CORS
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                // 일단 개발 단계에서는 CSRF 끄기
                 .csrf(csrf -> csrf.disable())
-
-                // 어떤 요청을 허용할지 설정
+                .cors(cors -> {})
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/health").permitAll() // 헬스 체크는 누구나
-                        .anyRequest().permitAll()                  // 나머지도 일단 전부 허용
+                        .requestMatchers("/api/**").permitAll()
+                        .anyRequest().authenticated()
                 )
-
-                // 기본 로그인 폼 사용 안 함
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable());
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("*")
+                        .allowedMethods("GET","POST","PUT","DELETE")
+                        .allowedHeaders("*");
+            }
+        };
+    }
+
+
 }
