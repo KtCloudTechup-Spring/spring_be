@@ -18,3 +18,7 @@ spring:
 
   application:
     name: spring-be
+
+jwt:
+  expiration_time: 86400000 #1일
+  secret: w92jd81nD9sqP01mS9vC4nZ8qL02mNd91pQ3bV7xK0rH6tJ9uM4wR2pL8zQ0sB7

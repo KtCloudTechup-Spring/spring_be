@@ -1,9 +1,16 @@
 package com.techup.spring.spring_be.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "user")
+@Getter
+@Setter
+@NoArgsConstructor
 public class User extends BaseEntity {
 
     @Id
@@ -30,7 +37,7 @@ public class User extends BaseEntity {
     @Column(name = "profile_image", length = 255)
     private String profileImage;
 
-    protected User() {
+   /* protected User() {
     }
 
     public User(Community community, String email, String password, String name, UserRole role) {
@@ -39,7 +46,7 @@ public class User extends BaseEntity {
         this.password = password;
         this.name = name;
         this.role = role;
-    }
+    }*/
 
     // Getter
     public Long getId() {
@@ -82,4 +89,6 @@ public class User extends BaseEntity {
     public void changeCommunity(Community community) {
         this.community = community;
     }
+
+
 }
