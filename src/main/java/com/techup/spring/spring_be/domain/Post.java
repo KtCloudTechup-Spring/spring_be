@@ -1,7 +1,13 @@
 package com.techup.spring.spring_be.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
 
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "post")
 public class Post extends BaseEntity{
@@ -26,8 +32,7 @@ public class Post extends BaseEntity{
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    protected Post() {
-    }
+
 
     public Post(User user, Community community, String title, String content) {
         this.user = user;
@@ -63,6 +68,11 @@ public class Post extends BaseEntity{
     }
 
     public void changeContent(String content) {
+        this.content = content;
+    }
+
+    public void update(String title, String content) {
+        this.title = title;
         this.content = content;
     }
 }
