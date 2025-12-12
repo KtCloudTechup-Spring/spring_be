@@ -1,7 +1,12 @@
 package com.techup.spring.spring_be.domain;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "comment")
 public class Comment extends BaseEntity{
@@ -23,34 +28,13 @@ public class Comment extends BaseEntity{
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    protected Comment() {
-    }
+    public Comment(User user, Post post, String content) {
 
-    public Comment(Post post, User user, String content) {
-        this.post = post;
         this.user = user;
+        this.post = post;
         this.content = content;
     }
-
-    // Getter
-    public Long getId() {
-        return id;
-    }
-
-    public Post getPost() {
-        return post;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    // 변경 메서드
-    public void changeContent(String content) {
+    public void update(String content) {
         this.content = content;
     }
 }
