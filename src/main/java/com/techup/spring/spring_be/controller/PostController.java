@@ -14,6 +14,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.techup.spring.spring_be.dto.common.ErrorResponse;
+
+@io.swagger.v3.oas.annotations.tags.Tag(name = "게시글", description = "게시글과 관련된 모든 API 엔드포인트들을 제공합니다.") // 클래스 레벨
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
@@ -29,9 +36,16 @@ public class PostController {
     }
 
     /** 게시글 생성 (로그인 필요) */
+    @Operation(summary = "새로운 게시글 생성", description = "인증된 사용자가 특정 커뮤니티에 새로운 게시글을 생성합니다.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "게시글이 성공적으로 생성되었으며, 생성된 게시글 정보를 반환합니다.",
+            content = @Content(schema = @Schema(implementation = PostResponse.class)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "요청 본문(RequestBody)의 데이터가 유효하지 않습니다.",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자입니다. 유효한 JWT 토큰이 필요합니다.",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @PostMapping
     public ApiResponse<PostResponse> createPost(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails, // Swagger UI에서 이 파라미터를 숨김
             @Valid @RequestBody PostCreateRequest request
     ) {
         Long userId = getCurrentUserId(userDetails);

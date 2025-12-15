@@ -25,7 +25,15 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         // ✅ 인증 없이 가능
-                        .requestMatchers("/api/health", "/api/login", "/api/register").permitAll()
+                        .requestMatchers(
+                                "/api/health",
+                                "/api/login",
+                                "/api/register",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/webjars/**"
+                        ).permitAll()
 
                         // ✅ 조회는 공개
                         .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
