@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -138,5 +139,22 @@ public class PostService {
         }
 
         postRepository.delete(post);
+    }
+
+    /** 내가 작성한 글 조회 */
+    public Page<PostResponse> getMyPosts(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        User finalUser = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+
+        return postRepository.findByUserId(userId, pageable).map(
+                post -> {
+                    long commentCount = commentRepository.countByPost(post);
+                    long favoriteCount = favoriteRepository.countByPost(post);
+                    boolean favorited = (finalUser != null) && favoriteRepository.existsByUserAndPost(finalUser, post);
+                    return new PostResponse(post, commentCount, favoriteCount, favorited);
+                }
+        );
     }
 }
