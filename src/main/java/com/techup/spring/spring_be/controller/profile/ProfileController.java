@@ -3,10 +3,15 @@ package com.techup.spring.spring_be.controller.profile;
 import com.techup.spring.spring_be.config.JwtTokenProvider;
 import com.techup.spring.spring_be.domain.User;
 import com.techup.spring.spring_be.dto.common.ApiResponse;
+import com.techup.spring.spring_be.dto.user.ChangeProfileRequest;
 import com.techup.spring.spring_be.dto.user.UserResponse;
 import com.techup.spring.spring_be.repository.UserRepository;
 import com.techup.spring.spring_be.service.profile.FileStorageService;
+import com.techup.spring.spring_be.service.profile.ProfileService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +23,7 @@ public class ProfileController {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final FileStorageService fileStorageService;
+    private final ProfileService profileService;
 
     @PostMapping("/avatar")
     public ApiResponse<UserResponse> uploadProfileImg(
@@ -46,4 +52,18 @@ public class ProfileController {
 
         return ApiResponse.ok("프로필 이미지 업로드 성공", res);
     }
+
+    // 프로필 이름 바꾸기
+    @PatchMapping("/change-profile")
+    public ApiResponse<UserResponse> changeProfileName (
+          @AuthenticationPrincipal UserDetails userDetails,
+          @Valid @RequestBody ChangeProfileRequest request
+    ) {
+       UserResponse res = profileService.changeProfile(userDetails.getUsername() ,request);
+        return ApiResponse.ok("마이페이지 수정 성공", res);
+    }
+
+
+
+
 }
