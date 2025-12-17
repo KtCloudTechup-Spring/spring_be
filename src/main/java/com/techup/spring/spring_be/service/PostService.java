@@ -16,9 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -34,38 +34,21 @@ public class PostService {
 
     /** 게시글 생성 */
     @Transactional
-    public PostResponse createPost(Long userId, PostCreateRequest request) {
+    public PostResponse createPost(Long userId, PostCreateRequest request, MultipartFile image) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
         Community community = communityRepository.findById(request.getCommunityId())
                 .orElseThrow(() -> new EntityNotFoundException("커뮤니티가 존재하지 않습니다."));
 
+        // 이미지 업로드는 뒤로(현재는 null)
         Post post = new Post(user, community, request.getTitle(), request.getContent());
         Post saved = postRepository.save(post);
 
-        long commentCount = 0;
-        long favoriteCount = 0;
-        boolean favorited = false;
-
-        return new PostResponse(saved, commentCount, favoriteCount, favorited);
+        return new PostResponse(saved, 0, 0, false);
     }
 
-    /** 단건 조회 (로그인 유저 기준 favorited 포함하려면 userId를 받을 수도 있음) */
-    public PostResponse getPost(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
-
-        long commentCount = commentRepository.countByPost(post);
-        long favoriteCount = favoriteRepository.countByPost(post);
-
-        // 비로그인 조회도 가능하게 해둔 상태라면 favorited는 기본 false
-        boolean favorited = false;
-
-        return new PostResponse(post, commentCount, favoriteCount, favorited);
-    }
-
-    /** 로그인 유저까지 받아서 favorited 포함한 단건 조회가 필요하면 이걸 사용 */
+    /** 단건 조회 */
     public PostResponse getPost(Long postId, Long userIdOrNull) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
@@ -83,8 +66,15 @@ public class PostService {
         return new PostResponse(post, commentCount, favoriteCount, favorited);
     }
 
-    /** 커뮤니티별 목록 조회 */
-    public Page<PostResponse> getPostsByCommunity(Long communityId, int page, int size, Long userIdOrNull) {
+    /** 커뮤니티별 목록 조회(검색/정렬) */
+    public Page<PostResponse> getPostsByCommunity(
+            Long communityId,
+            int page,
+            int size,
+            Long userIdOrNull,
+            String q,
+            String sort
+    ) {
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new EntityNotFoundException("커뮤니티가 존재하지 않습니다."));
 
@@ -95,20 +85,23 @@ public class PostService {
             user = userRepository.findById(userIdOrNull)
                     .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
         }
-
         User finalUser = user;
-        return postRepository.findByCommunityOrderByCreatedAtDesc(community, pageable)
-                .map(post -> {
-                    long commentCount = commentRepository.countByPost(post);
-                    long favoriteCount = favoriteRepository.countByPost(post);
-                    boolean favorited = (finalUser != null) && favoriteRepository.existsByUserAndPost(finalUser, post);
-                    return new PostResponse(post, commentCount, favoriteCount, favorited);
-                });
+
+        Page<Post> posts = "popular".equalsIgnoreCase(sort)
+                ? postRepository.searchPopularByCommunity(community, q, pageable)
+                : postRepository.searchLatestByCommunity(community, q, pageable);
+
+        return posts.map(p -> {
+            long commentCount = commentRepository.countByPost(p);
+            long favoriteCount = favoriteRepository.countByPost(p);
+            boolean favorited = (finalUser != null) && favoriteRepository.existsByUserAndPost(finalUser, p);
+            return new PostResponse(p, commentCount, favoriteCount, favorited);
+        });
     }
 
-    /** 수정 (작성자만) */
+    /** 수정 */
     @Transactional
-    public PostResponse updatePost(Long postId, Long userId, PostUpdateRequest request) {
+    public PostResponse updatePost(Long postId, Long userId, PostUpdateRequest request, MultipartFile image) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
 
@@ -128,7 +121,7 @@ public class PostService {
         return new PostResponse(post, commentCount, favoriteCount, favorited);
     }
 
-    /** 삭제 (작성자만) */
+    /** 삭제 */
     @Transactional
     public void deletePost(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
@@ -141,20 +134,19 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    /** 내가 작성한 글 조회 */
+    /** ✅ 내가 작성한 글 조회 (ProfileController에서 호출하는 메서드) */
     public Page<PostResponse> getMyPosts(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-
-        User finalUser = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
-        return postRepository.findByUserId(userId, pageable).map(
-                post -> {
-                    long commentCount = commentRepository.countByPost(post);
-                    long favoriteCount = favoriteRepository.countByPost(post);
-                    boolean favorited = (finalUser != null) && favoriteRepository.existsByUserAndPost(finalUser, post);
-                    return new PostResponse(post, commentCount, favoriteCount, favorited);
-                }
-        );
+        Pageable pageable = PageRequest.of(page, size);
+
+        return postRepository.findByUserOrderByCreatedAtDesc(user, pageable)
+                .map(p -> {
+                    long commentCount = commentRepository.countByPost(p);
+                    long favoriteCount = favoriteRepository.countByPost(p);
+                    boolean favorited = favoriteRepository.existsByUserAndPost(user, p);
+                    return new PostResponse(p, commentCount, favoriteCount, favorited);
+                });
     }
 }

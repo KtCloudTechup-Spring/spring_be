@@ -45,11 +45,11 @@ public class PostController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @PostMapping
     public ApiResponse<PostResponse> createPost(
-            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails, // Swagger UI에서 이 파라미터를 숨김
+            @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody PostCreateRequest request
     ) {
         Long userId = getCurrentUserId(userDetails);
-        PostResponse res = postService.createPost(userId, request);
+        PostResponse res = postService.createPost(userId, request, null); // ✅ 3번째 인자 null
         return ApiResponse.ok("게시글 생성 성공", res);
     }
 
@@ -70,12 +70,12 @@ public class PostController {
             @PathVariable Long communityId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "latest") String sort,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         Long userIdOrNull = (userDetails == null) ? null : getCurrentUserId(userDetails);
-
-        // ✅ 여기서 4번째 인자 userIdOrNull을 넘겨야 에러가 사라짐
-        Page<PostResponse> res = postService.getPostsByCommunity(communityId, page, size, userIdOrNull);
+        Page<PostResponse> res = postService.getPostsByCommunity(communityId, page, size, userIdOrNull, q, sort);
         return ApiResponse.ok("게시글 목록 조회 성공", res);
     }
 
@@ -87,7 +87,7 @@ public class PostController {
             @Valid @RequestBody PostUpdateRequest request
     ) {
         Long userId = getCurrentUserId(userDetails);
-        PostResponse res = postService.updatePost(postId, userId, request);
+        PostResponse res = postService.updatePost(postId, userId, request, null); // ✅ request + null
         return ApiResponse.ok("게시글 수정 성공", res);
     }
 
