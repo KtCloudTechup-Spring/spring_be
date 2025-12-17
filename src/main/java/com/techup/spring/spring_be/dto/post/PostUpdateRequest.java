@@ -13,4 +13,6 @@ public class PostUpdateRequest {
 
     @NotBlank
     private String content;
+
+    private String imageUrl;
 }
