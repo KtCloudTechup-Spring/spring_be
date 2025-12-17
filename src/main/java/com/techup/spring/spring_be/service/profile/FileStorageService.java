@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @Service
 public class FileStorageService {
@@ -20,16 +21,16 @@ public class FileStorageService {
 
         File directory = new File(uploadDir);
         if(!directory.exists()) {
-            directory.mkdir();
+            directory.mkdirs();
         }
 
         // 실제 저장 파일명
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
         Path filePath = Paths.get(uploadDir, fileName);
 
-        Files.copy(file.getInputStream(), filePath);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         // db에 저장할 파일 경로
-        return "/uploads" + fileName;
+        return "/uploads/" + fileName;
     }
 }
