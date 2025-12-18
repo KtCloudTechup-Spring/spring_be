@@ -24,6 +24,8 @@ public class PostResponse {
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
+    private final String imageUrl;
+
     public PostResponse(Post post, long commentCount, long favoriteCount, boolean favorited){
         this.id = post.getId();
         this.communityId = post.getCommunity().getId();
@@ -41,5 +43,7 @@ public class PostResponse {
 
         this.createdAt = post.getCreatedAt();
         this.updatedAt = post.getUpdatedAt();
+
+        this.imageUrl = post.getImageUrl();
     }
 }
