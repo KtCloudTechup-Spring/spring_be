@@ -13,12 +13,14 @@ import com.techup.spring.spring_be.repository.PostRepository;
 import com.techup.spring.spring_be.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import java.io.IOException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.techup.spring.spring_be.service.storage.S3FileStorageService;
 
 @Service
 @RequiredArgsConstructor
@@ -31,18 +33,21 @@ public class PostService {
 
     private final FavoriteRepository favoriteRepository;
     private final CommentRepository commentRepository;
+    private final S3FileStorageService s3FileStorageService;
 
-    /** 게시글 생성 */
+    /** 게시글 생성 (이미지 optional) */
     @Transactional
-    public PostResponse createPost(Long userId, PostCreateRequest request, MultipartFile image) {
+    public PostResponse createPost(Long userId, PostCreateRequest request, MultipartFile image) throws IOException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
         Community community = communityRepository.findById(request.getCommunityId())
                 .orElseThrow(() -> new EntityNotFoundException("커뮤니티가 존재하지 않습니다."));
 
-        // 이미지 업로드는 뒤로(현재는 null)
-        Post post = new Post(user, community, request.getTitle(), request.getContent());
+        // ✅ 이미지가 없으면 null
+        String imageUrl = s3FileStorageService.uploadPostImage(image);
+
+        Post post = new Post(user, community, request.getTitle(), request.getContent(), imageUrl);
         Post saved = postRepository.save(post);
 
         return new PostResponse(saved, 0, 0, false);
@@ -99,9 +104,9 @@ public class PostService {
         });
     }
 
-    /** 수정 */
+    /** 게시글 수정 (이미지 optional) */
     @Transactional
-    public PostResponse updatePost(Long postId, Long userId, PostUpdateRequest request, MultipartFile image) {
+    public PostResponse updatePost(Long postId, Long userId, PostUpdateRequest request, MultipartFile image) throws IOException {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
 
@@ -109,7 +114,13 @@ public class PostService {
             throw new IllegalStateException("작성자만 수정할 수 있습니다.");
         }
 
-        post.update(request.getTitle(), request.getContent());
+        // ✅ 새 이미지가 오면 업로드 후 교체, 아니면 기존 유지
+        String imageUrl = post.getImageUrl();
+        String uploaded = s3FileStorageService.uploadPostImage(image);
+        if (uploaded != null) imageUrl = uploaded;
+
+        // ✅ Post 엔티티에 update(title, content, imageUrl) 있어야 함
+        post.update(request.getTitle(), request.getContent(), imageUrl);
 
         long commentCount = commentRepository.countByPost(post);
         long favoriteCount = favoriteRepository.countByPost(post);

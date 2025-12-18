@@ -30,3 +30,12 @@ jwt:
 
 file:
   upload-dir: uploads/
+
+cloud:
+  aws:
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: spring-s3-image
+    stack:
+      auto: false
