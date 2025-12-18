@@ -1,7 +1,6 @@
 package com.techup.spring.spring_be.domain;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
@@ -32,35 +31,41 @@ public class Post extends BaseEntity{
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "image_url")
+    private String imageUrl;
 
 
+    //  이미지 없는 생성
     public Post(User user, Community community, String title, String content) {
         this.user = user;
         this.community = community;
         this.title = title;
         this.content = content;
+        this.imageUrl = null;
     }
 
-    // Getter
-    public Long getId() {
-        return id;
+    //  이미지 포함 생성
+    public Post(User user, Community community, String title, String content, String imageUrl) {
+        this.user = user;
+        this.community = community;
+        this.title = title;
+        this.content = content;
+        this.imageUrl = imageUrl;
     }
 
-    public User getUser() {
-        return user;
+    //  수정(이미지 포함)
+    public void update(String title, String content, String imageUrl) {
+        this.title = title;
+        this.content = content;
+        this.imageUrl = imageUrl;
     }
 
-    public Community getCommunity() {
-        return community;
+    //  수정(이미지 변경 없을 때)
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public String getContent() {
-        return content;
-    }
 
     // 변경 메소드
     public void changeTitle(String title) {
@@ -71,8 +76,4 @@ public class Post extends BaseEntity{
         this.content = content;
     }
 
-    public void update(String title, String content) {
-        this.title = title;
-        this.content = content;
-    }
 }
