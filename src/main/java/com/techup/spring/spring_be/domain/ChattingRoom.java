@@ -1,10 +1,12 @@
 package com.techup.spring.spring_be.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
 @Table(name = "chatting_room")
 public class ChattingRoom extends BaseEntity{
     @Id
@@ -12,13 +14,13 @@ public class ChattingRoom extends BaseEntity{
     private Long id;
 
     // 어떤 커뮤니티(과정)의 채팅방인지
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "community_id", nullable = false)
     private Community community;
 
     // 방 만든 사람
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
+    @JoinColumn(name = "created_by")
     private User createdBy;
 
     @Column(nullable = false, length = 255)

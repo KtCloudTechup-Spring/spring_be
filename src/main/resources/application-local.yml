@@ -30,3 +30,14 @@ jwt:
 
 file:
   upload-dir: uploads/
+
+redis:
+  host: localhost
+  port: 6379
+
+websocket:
+  message:
+    broker:
+      simple:
+        enabled: false
+
