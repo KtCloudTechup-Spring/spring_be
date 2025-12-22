@@ -5,10 +5,15 @@ import com.techup.spring.spring_be.domain.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtTokenProvider {
@@ -27,6 +32,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setSubject(user.getEmail())        // 기본 subject
                 .claim("userName", user.getName())
+                .claim("userId", user.getId())
                 .claim("role", user.getRole())
                 .claim("profileImage", user.getProfileImage())
                 .claim("communityName", user.getCommunity().getName())
@@ -35,6 +41,29 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
+
+    // WebSocket에서 사용할 메서드
+    public Authentication getAuthentication(String token) {
+
+        Claims claims = parseClaims(token);
+
+        String email = claims.getSubject();
+        String role = claims.get("role", String.class);
+
+        List<SimpleGrantedAuthority> authorities =
+                Collections.singletonList(
+                        new SimpleGrantedAuthority("ROLE_" + role)
+                );
+
+        return new UsernamePasswordAuthenticationToken(
+                email,        // principal
+                null,         // credentials
+                authorities   // 권한
+        );
+    }
+
+
+
 
     // 토큰에서 이메일 꺼내기
     public String getEmail(String token) {

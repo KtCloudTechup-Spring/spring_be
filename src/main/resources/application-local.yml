@@ -39,3 +39,4 @@ cloud:
       bucket: spring-s3-image
     stack:
       auto: false
+
