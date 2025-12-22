@@ -1,5 +1,6 @@
 package com.techup.spring.spring_be.dto.chat;
 
+import com.techup.spring.spring_be.domain.ChatMessage;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,4 +27,15 @@ public class ChatMessageResponse {
         this.createdAt = createdAt;
     }
 
+    public static ChatMessageResponse from(ChatMessage chatMessage) {
+        return new ChatMessageResponse(
+                chatMessage.getChattingRoom().getId(),
+                chatMessage.getSender().getId(),
+                chatMessage.getSender().getEmail(),
+                chatMessage.getSender().getName(),
+                chatMessage.getContent(),
+                chatMessage.getCreatedAt()
+
+        );
+    }
 }
