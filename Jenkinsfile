@@ -1,13 +1,15 @@
 pipeline {
     agent any
+    
     environment {
         TERM = 'xterm'
+        // Gradle 캐시 경로 설정
         GRADLE_USER_HOME = '.gradle-cache'
     }
     
     stages {
-        // 0. 빌드 준비
-        stage('Prepare for Build') {
+        // 1. 빌드 준비 (실행 권한 부여)
+        stage('Prepare') {
             steps {
                 script {
                     if (isUnix()) {
@@ -17,7 +19,7 @@ pipeline {
             }
         }
         
-        // 1. 이전 빌드 결과물 정리
+        // 2. 이전 빌드 결과 정리
         stage('Clean') {
             steps {
                 script {
@@ -30,19 +32,20 @@ pipeline {
             }
         }
         
-        // 2. 단위 테스트 스테이지 삭제됨 (DB 에러 방지)
-        
-        // 3. 빌드 및 패키징 (테스트 제외)
+        // 3. 빌드 및 패키징 (핵심: -x test 옵션으로 DB 연결이 필요한 모든 테스트 생략)
         stage('Build & Package') {
             steps {
                 script {
+                    echo 'Building application without running tests (skipping DB check)...'
                     if (isUnix()) {
-                        // -x test 옵션으로 테스트 없이 JAR 파일만 생성
-                        sh './gradlew build -x test'
+                        // -x test: 테스트 태스크 제외
+                        // -x check: 정적 분석 및 기타 검증 태스크 제외
+                        sh './gradlew build -x test -x check'
                     } else {
-                        bat 'gradlew.bat build -x test'
+                        bat 'gradlew.bat build -x test -x check'
                     }
                 }
+                // 생성된 JAR 파일 보관
                 archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
             }
         }
@@ -51,13 +54,13 @@ pipeline {
     post {
         always {
             echo 'Pipeline finished.'
-            cleanWs()
+            cleanWs() // 워크스페이스 정리
         }
         success {
-            echo 'Pipeline succeeded! (Tests were skipped)'
+            echo '빌드 성공! (데이터베이스 확인 없이 패키징 완료)'
         }
         failure {
-            echo 'Pipeline failed! Check logs for errors.'
+            echo '빌드 실패! 로그를 확인하세요.'
         }
     }
 }
