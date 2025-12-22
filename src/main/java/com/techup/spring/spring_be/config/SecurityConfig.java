@@ -33,7 +33,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/webjars/**",
-                                "/uploads/**"
+                                "/uploads/**",
+                                "/ws-stomp/**"
                         ).permitAll()
 
                         // ✅ 조회는 공개
@@ -43,6 +44,7 @@ public class SecurityConfig {
                         // 🔒 그 외는 인증 필요
                         .requestMatchers("/api/profile/**").authenticated()
                         .requestMatchers("/api/posts/**").authenticated()
+                        .requestMatchers("/api/chat-rooms/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

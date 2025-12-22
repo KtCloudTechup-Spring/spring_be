@@ -12,4 +12,6 @@ public interface ChattingRoomRepository extends JpaRepository<ChattingRoom, Long
     //List<ChattingRoom> findByCommunity(Community community);
 
     Optional<ChattingRoom> findByCommunity(Community community);
+
+    Optional<ChattingRoom> findByCommunityId(Long communityId);
 }

@@ -15,7 +15,7 @@ public class ChattingRoom extends BaseEntity{
 
     // 어떤 커뮤니티(과정)의 채팅방인지
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "community_id", nullable = false)
+    @JoinColumn(name = "community_id", nullable = false, unique = true)
     private Community community;
 
     // 방 만든 사람
