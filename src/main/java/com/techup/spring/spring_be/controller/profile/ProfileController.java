@@ -32,7 +32,7 @@ public class ProfileController {
     @PostMapping("/avatar")
     public ApiResponse<UserResponse> uploadProfileImg(
             @RequestHeader("Authorization") String authHeader,
-            @RequestParam("file") MultipartFile file
+            @RequestPart("file") MultipartFile file
     ) throws Exception {
 
         String token = authHeader.replace("Bearer", "").trim();
@@ -41,18 +41,11 @@ public class ProfileController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다"));
 
-        String savedPath = fileStorageService.saveFile(file);
+        // 기본 uploads 폴더에 저장
+       // String savedPath = fileStorageService.saveFile(file);
 
-        user.setProfileImage(savedPath);
-        userRepository.save(user);
-
-        UserResponse res = new UserResponse(
-                user.getEmail(),
-                user.getName(),
-                user.getRole(),
-                user.getProfileImage(),
-                user.getCommunity().getName()
-        );
+        // aws s3에 이미지 저장
+        UserResponse res = profileService.saveAvatar(user, file);
 
         return ApiResponse.ok("프로필 이미지 업로드 성공", res);
     }
