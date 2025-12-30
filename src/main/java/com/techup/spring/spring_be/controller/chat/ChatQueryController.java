@@ -4,6 +4,7 @@ import com.techup.spring.spring_be.domain.ChatParticipant;
 import com.techup.spring.spring_be.domain.User;
 import com.techup.spring.spring_be.dto.chat.ChatMessageResponse;
 import com.techup.spring.spring_be.dto.chat.ChatParticipantResponse;
+import com.techup.spring.spring_be.dto.chat.ChatUserParticipantResponse;
 import com.techup.spring.spring_be.repository.ChatParticipantRepository;
 import com.techup.spring.spring_be.repository.UserRepository;
 import com.techup.spring.spring_be.service.chat.ChatQueryService;
@@ -44,6 +45,11 @@ public class ChatQueryController {
         Long userId = getCurrentUserId(userDetails);
         return chatQueryService.myChatParticipant(userId);
 
+    }
+
+    @GetMapping("/{communityId}/participant")
+    public List<ChatUserParticipantResponse> userChatParticipant(@PathVariable Long communityId) {
+        return chatQueryService.userChatParticipant(communityId);
     }
 
 }
