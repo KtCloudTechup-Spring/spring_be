@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-@Profile("local")
+@Profile("!redis")
 @Service
 @RequiredArgsConstructor
 public class SimpleMessagePublisher implements MessagePublisher{

@@ -14,9 +14,9 @@ public class RedisPublisher implements MessagePublisher{
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    /*public void publish(String channel, Object message) {
+    /* public void publish(String channel, Object message) {
         redisTemplate.convertAndSend(channel, message);
-    }*/
+    } */
 
     @Override
     public void publish(ChatMessageResponse message) {
