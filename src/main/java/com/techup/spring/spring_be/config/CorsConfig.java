@@ -18,7 +18,8 @@ public class CorsConfig {
         // 허용할 프론트엔드 주소
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "http://localhost:3001"
+                "http://localhost:3001",
+                "http://52.79.171.94"
         ));
 
         // 허용 메서드
