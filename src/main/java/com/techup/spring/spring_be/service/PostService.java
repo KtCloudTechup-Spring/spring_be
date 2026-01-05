@@ -38,6 +38,7 @@ public class PostService {
     /** 게시글 생성 (이미지 optional) */
     @Transactional
     public PostResponse createPost(Long userId, PostCreateRequest request, MultipartFile image) throws IOException {
+        System.out.println("createPost 서비스");
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
 
@@ -46,6 +47,8 @@ public class PostService {
 
         // ✅ 이미지가 없으면 null
         String imageUrl = s3FileStorageService.uploadPostImage(image);
+
+        System.out.println("imgUrl: "+ imageUrl);
 
         Post post = new Post(user, community, request.getTitle(), request.getContent(), imageUrl);
         Post saved = postRepository.save(post);
