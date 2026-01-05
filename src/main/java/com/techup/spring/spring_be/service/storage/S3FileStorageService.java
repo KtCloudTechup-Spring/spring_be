@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-
+import software.amazon.awssdk.services.s3.model.S3Exception;
 @Service
 @RequiredArgsConstructor
 public class S3FileStorageService {
@@ -39,16 +39,24 @@ public class S3FileStorageService {
         String key = "posts/" + LocalDate.now() + "/" + UUID.randomUUID() + ext;
         System.out.println("key: " + key);
 
-        PutObjectRequest putReq = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .contentType(file.getContentType())
-                .build();
+        try {
+            PutObjectRequest putReq = PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .contentType(file.getContentType())
+                    .build();
 
-        s3Client.putObject(
-                putReq,
-                RequestBody.fromInputStream(file.getInputStream(), file.getSize())
-        );
+            s3Client.putObject(
+                    putReq,
+                    RequestBody.fromInputStream(file.getInputStream(), file.getSize())
+            );
+
+        }catch (S3Exception e){
+            System.out.println("S3 업로드 실패 "+e.getMessage());
+            throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.");
+        }
+
+
 
         return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
     }
