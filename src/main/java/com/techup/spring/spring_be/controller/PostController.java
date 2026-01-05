@@ -57,8 +57,14 @@ public class PostController {
             @Valid @RequestPart("request") PostCreateRequest request,
             @RequestPart(value = "image", required = false) MultipartFile image
     ) throws IOException {
-        Long userId = getCurrentUserId(userDetails);
-        PostResponse res = postService.createPost(userId, request, image);
+        PostResponse res = null;
+        try{
+            Long userId = getCurrentUserId(userDetails);
+             res = postService.createPost(userId, request, image);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         return ApiResponse.ok("게시글 생성 성공", res);
     }
 
