@@ -9,31 +9,32 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
+
 @Profile("redis")
 @Component
 @RequiredArgsConstructor
 public class RedisSubscriber implements MessageListener {
+
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper;
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
-
-        try{
-            String body = new String(message.getBody());
-
+        try {
+            String body = new String(message.getBody(), StandardCharsets.UTF_8);
             ChatMessageResponse response = objectMapper.readValue(body, ChatMessageResponse.class);
 
-            // 채팅방별로 브로드캐스트
+            // 채팅방별 브로드캐스트
             messagingTemplate.convertAndSend(
-                    "/sub/chat/" + response.getChattingRoomId(), response
+                    "/sub/chat/" + response.getChattingRoomId(),
+                    response
             );
-
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            // 운영에서는 리스너 죽지 않게 throw 금지
+            // log.error("RedisSubscriber onMessage error", e);
         }
     }
-
 }
 
 // 메세지 받는 쪽

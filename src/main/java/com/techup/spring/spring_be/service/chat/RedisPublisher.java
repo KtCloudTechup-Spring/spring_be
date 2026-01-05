@@ -2,6 +2,7 @@ package com.techup.spring.spring_be.service.chat;
 
 import com.techup.spring.spring_be.dto.chat.ChatMessageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RedisPublisher implements MessagePublisher{
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final @Qualifier("redisTemplateForBroker")
+    RedisTemplate<String, Object> redisTemplate;
 
     /* public void publish(String channel, Object message) {
         redisTemplate.convertAndSend(channel, message);
