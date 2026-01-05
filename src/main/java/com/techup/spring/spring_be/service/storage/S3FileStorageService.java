@@ -26,6 +26,8 @@ public class S3FileStorageService {
     public String uploadPostImage(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) return null;
 
+        System.out.println("uploadPostImage 서비스");
+
         // ✅ 확장자만 유지 (없으면 빈 문자열)
         String original = file.getOriginalFilename();
         String ext = "";
@@ -35,6 +37,7 @@ public class S3FileStorageService {
 
         // ✅ key는 안전하게 UUID 기반으로만
         String key = "posts/" + LocalDate.now() + "/" + UUID.randomUUID() + ext;
+        System.out.println("key: " + key);
 
         PutObjectRequest putReq = PutObjectRequest.builder()
                 .bucket(bucket)
