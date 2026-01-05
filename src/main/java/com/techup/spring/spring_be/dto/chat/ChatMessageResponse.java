@@ -16,15 +16,17 @@ public class ChatMessageResponse {
     private String senderName;
     private String content;
     private LocalDateTime createdAt;
+    private String userProfileImg;
 
     @Builder
-    public ChatMessageResponse(Long chattingRoomId, Long senderId, String senderEmail,String senderName, String content, LocalDateTime createdAt) {
+    public ChatMessageResponse(Long chattingRoomId, Long senderId, String senderEmail,String senderName, String content, LocalDateTime createdAt, String userProfileImg) {
         this.chattingRoomId = chattingRoomId;
         this.senderId = senderId;
         this.senderEmail = senderEmail;
         this.senderName = senderName;
         this.content = content;
         this.createdAt = createdAt;
+        this.userProfileImg = userProfileImg;
     }
 
     public static ChatMessageResponse from(ChatMessage chatMessage) {
@@ -34,7 +36,8 @@ public class ChatMessageResponse {
                 chatMessage.getSender().getEmail(),
                 chatMessage.getSender().getName(),
                 chatMessage.getContent(),
-                chatMessage.getCreatedAt()
+                chatMessage.getCreatedAt(),
+                chatMessage.getSender().getProfileImage()
 
         );
     }
