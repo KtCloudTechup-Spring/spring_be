@@ -23,6 +23,11 @@ public class RedisSubscriber implements MessageListener {
     public void onMessage(Message message, byte[] pattern) {
         try {
             String body = new String(message.getBody(), StandardCharsets.UTF_8);
+
+            System.out.println("[Redis 수신]");
+            System.out.println("현재 서버 포트 => " + System.getProperty("server.port"));
+            System.out.println("메시지 = " + body);
+
             ChatMessageResponse response = objectMapper.readValue(body, ChatMessageResponse.class);
 
             // 채팅방별 브로드캐스트
