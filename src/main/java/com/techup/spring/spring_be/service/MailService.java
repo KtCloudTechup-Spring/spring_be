@@ -42,6 +42,7 @@ public class MailService {
         // 이메일 메시지를 생성합니다.
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(targetEmail); // 정리된 이메일 주소를 수신자로 설정합니다.
+        message.setFrom("yourgmail@gmail.com");
         message.setSubject("[서비스] 인증 코드");
         message.setText("회원가입 인증 코드입니다: " + authCode);
 
